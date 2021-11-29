@@ -44,8 +44,6 @@ _Before installing PDAL you could instead:_ `conda activate /home/ucfaptv/opt/mi
 
 5. Copy `build/lib/libpdal_plugin_reader_rxp.so` to `/path/to/.conda/envs/pdal/lib/.`, this is required to open .rxp in Python.
 
-You could also use the conda environment at `/home/ucfaptv/opt/miniconda/envs/pdal`
-
 ### Processing data
 
 `conda activate pdal`

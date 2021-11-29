@@ -28,7 +28,9 @@ File structure should be as below where `ScanPos001`, `ScanPos002`, ... `ScanPos
   └── models
       └── <QSMs from either TreeQSM or treegraph>
 ```
-### Compiling PDAL with python bindings
+### Compiling PDAL with python bindings and .rxp support
+
+_Before installing PDAL you could instead:_ `conda activate /home/ucfaptv/opt/miniconda/envs/pdal-python`
 
 1.  Create a conda environment using `conda create -n pdal -c conda-forge gdal ninja cmake cxx-compiler laszip pdal python-pdal`
     

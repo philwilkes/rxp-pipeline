@@ -32,15 +32,34 @@ File structure should be as below where `ScanPos001`, `ScanPos002`, ... `ScanPos
 
 _Before installing PDAL you could instead:_ `conda activate /home/ucfaptv/opt/miniconda/envs/pdal-python`
 
-1.  Create a conda environment using `conda create -n pdal -c conda-forge gdal ninja cmake cxx-compiler laszip pdal python-pdal`
+1.  Create a conda environment using `conda create -n pdal -c conda-forge gdal ninja cmake cxx-compiler laszip pdal python-pdal pandas`
     
-2.  Download the [PDAL current release](https://pdal.io/download.html#current-release-s) 
+2.  Download the [PDAL current release](https://pdal.io/download.html#current-release-s).
+    
+    Example commands in linux:
+    
+    
+        $ wget https://github.com/PDAL/PDAL/releases/download/2.3.0/PDAL-2.3.0-src.tar.gz
+        $ tar -xf PDAL-2.3.0-src.tar.gz
+        
 
 3.  Download the `rivlib-2_5_10-x86_64-linux-gcc9.zip` from the memebers area of the RIEGL website (make sure to get the gcc9 version). Unzip and add an environmental variable to point at the directory `export RiVLib_DIR=/path/to/rivlib-2_5_10-x86_64-linux-gcc9`
 
-4.  Follow the [PDAL Unix Compilation](https://pdal.io/development/compilation/unix.html) notes. Before running cmake
+4.  Before running cmake
     - edit line 63 of `cmake/options.cmake` to `"Choose if RiVLib support should be built" True)`
     - edit line 56 of `plugins/rxp/io/RxpReader.hpp` to `const bool DEFAULT_SYNC_TO_PPS = false;`
+
+    Then, follow the [PDAL Unix Compilation](https://pdal.io/development/compilation/unix.html) notes to compile PDAL. Example commands in Linux:
+       
+        $ cd /path/to/PDAL-2.3.0-src
+        $ mkdir build
+        $ cd build
+        $ cmake -G Ninja ..
+        $ ninja
+        $ ls bin/pdal
+        bin/pdal
+        
+    Next, add the this bin path to the environmental variable $PATH `export PATH=/path/to/PDAL-2.3.0-src/build/bin:$PATH`
 
 5. Copy `build/lib/libpdal_plugin_reader_rxp.so` to `/path/to/.conda/envs/pdal/lib/.`, this is required to open .rxp in Python.
 
@@ -50,9 +69,13 @@ _Before installing PDAL you could instead:_ `conda activate /home/ucfaptv/opt/mi
 
 Create a direcotry in the the `.riproject` directory called `extraction` using `mkdir`, navigate into it and create a directoty called `rxp2ply` and navigate into this.  
 
+#### 0. Download the python scripts from github
+`$ git clone https://github.com/philwilkes/rxp-pipeline.git`
+
 #### 1. rxp2ply.py 
 
-Run `python rxp2ply.py --project /path/to/.riproject --length 10 --deviation 15 --odir . --verbose`
+Navigate to `cd /path/to/xx.riporject/extraction/rxp2ply/`
+Run `python /path/to/rxp-pipeline/rxp2ply.py --project ../../../xx.riproject --deviation 15 --odir . --verbose`
 
 This will populate the `rxp2ply` directory with full resolution tiled data
 
@@ -62,13 +85,13 @@ This downsamples the data to a uniform density
 
 `mkdir ../downsample` and navigate to `cd ../downsample`
 
-`python ~/opt/pdal/downsample.py -i ../rxp2ply/ --length .02 --verbose `
+`python /path/to/rxp-pipeline/downsample.py -i ../rxp2ply/ --length .02 --verbose `
 
 #### 3. tile_index.py
 
 Navigate back to `extraction`
 
-`python ~/opt/pdal/tile_index.py downsample` where `downsample` is the directory with downsampled tiles.
+`python /path/to/rxp-pipeline/tile_index.py downsample` where `downsample` is the directory with downsampled tiles.
 
 #### 4. Run FSCT
 

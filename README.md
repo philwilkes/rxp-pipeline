@@ -95,4 +95,4 @@ Navigate back to `extraction`
 
 #### 4. Run FSCT
 
-Instrcutions on this are [here](https://github.com/philwilkes/FSCT).
+Instructions on this are [here](https://github.com/philwilkes/FSCT).

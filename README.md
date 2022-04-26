@@ -1,6 +1,6 @@
 # rxp-pipeline
 
-How we process registered .rxp data to allow us to process further. This process uses PDAL and requires installation of the Python bindings.
+Methods used by UCL Geography to preprocess registered .rxp data to allow further processing. The pipeline uses PDAL and requires installation of the Python bindings.
 
 ### File structure
 
@@ -28,6 +28,7 @@ File structure should be as below where `ScanPos001`, `ScanPos002`, ... `ScanPos
   └── models
       └── <QSMs from either TreeQSM or treegraph>
 ```
+
 ### Compiling PDAL with python bindings and .rxp support
 
 _Before installing PDAL you could instead:_ `conda activate /home/ucfaptv/opt/miniconda/envs/pdal-python`

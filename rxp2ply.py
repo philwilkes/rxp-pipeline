@@ -14,11 +14,15 @@ def tile_data(scan_pos, args):
 
 #    try:    
         base, scan = os.path.split(scan_pos)
-        if args.test:
-            print(os.path.join(base, scan, '??????_??????.mon.rxp'))
-            rxp = glob.glob(os.path.join(base, scan, '??????_??????.mon.rxp'))[0]
-        else:
-            rxp = glob.glob(os.path.join(base, scan, '??????_??????.rxp'))[0]
+        try:
+            if args.test:
+                print(os.path.join(base, scan, '??????_??????.mon.rxp'))
+                rxp = glob.glob(os.path.join(base, scan, '??????_??????.mon.rxp'))[0]
+            else:
+                rxp = glob.glob(os.path.join(base, scan, '??????_??????.rxp'))[0]
+        except:
+            if args.verbose: print(f"!!! Can't find {os.path.join(base, scan, '??????_??????.rxp')} !!!")
+            return
         sp = int(scan.replace(args.prefix, '').replace('.SCNPOS', ''))
     
         if args.verbose:

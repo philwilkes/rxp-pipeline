@@ -1,3 +1,4 @@
+import sys
 import os
 import glob
 import multiprocessing
@@ -16,7 +17,6 @@ def tile_data(scan_pos, args):
         base, scan = os.path.split(scan_pos)
         try:
             if args.test:
-                print(os.path.join(base, scan, '??????_??????.mon.rxp'))
                 rxp = glob.glob(os.path.join(base, scan, '??????_??????.mon.rxp'))[0]
             else:
                 rxp = glob.glob(os.path.join(base, scan, 'scans' if base.endswith('.PROJ') else '', '??????_??????.rxp'))[0]
@@ -30,32 +30,40 @@ def tile_data(scan_pos, args):
                 print('rxp -> xyz:', rxp)
     
         fn_matrix = glob.glob(os.path.join(base, 'matrix', f'{scan.replace(".SCNPOS", "")}.*'))[0]
-        matrix = np.loadtxt(fn_matrix)
+        matrix = np.dot(args.global_matrix, np.loadtxt(fn_matrix))
         st_matrix = ' '.join(matrix.flatten().astype(str))
-    
+
+        cmds = []
+ 
         # pdal commands as dictionaries
         read_in = {"type":"readers.rxp",
                    "filename": rxp,
                    "sync_to_pps": "false",
                    "reflectance_as_intensity": "false"}
+        cmds.append(read_in)
     
         dev_filter = {"type":"filters.range", 
                       "limits":"Deviation[0:{}]".format(args.deviation)}
-    
+        cmds.append(dev_filter)    
+
         refl_filter = {"type":"filters.range", 
                       "limits":"Reflectance[{}:{}]".format(*args.reflectance)}
+        cmds.append(refl_filter)
     
         transform = {"type":"filters.transformation",
                      "matrix":st_matrix}
-    
+        cmds.append(transform)
+   
         tile = {"type":"filters.splitter",
                 "length":f"{args.tile}",
                 "origin_x":"0",
                 "origin_y":"0"}
+        cmds.append(tile)
+
 
         # link commmands and pass to pdal
-        cmds = [read_in, dev_filter, refl_filter, transform, tile]
         JSON = json.dumps(cmds)
+
         pipeline = pdal.Pipeline(JSON)
         pipeline.execute()
     
@@ -108,10 +116,12 @@ if __name__ == '__main__':
     parser.add_argument('--tile', type=float, default=10, help='length of tile')
     parser.add_argument('--num-prcs', type=int, default=10, help='number of cores to use')
     parser.add_argument('--prefix', type=str, default='ScanPos', help='file name prefix, deafult:ScanPos')
-    parser.add_argument('--bbox', type=int, nargs=4, default=[], help='file name prefix, deafult:ScanPos')
+    parser.add_argument('--bbox', type=int, nargs=4, default=[], help='bounding box format xmin xmax  ymin  ymax')
+    parser.add_argument('--global-matrix', type=str, default=False, help='path to global rotation matrix')
     parser.add_argument('--pos', default=[], nargs='*', help='process using specific scan positions')
     parser.add_argument('--test', action='store_true', help='test using the .mon.rxp')
     parser.add_argument('--verbose', action='store_true', help='print something')
+    parser.add_argument('--print-bbox-only', action='store_true', help='print bounding box only')
 
     args = parser.parse_args()
 
@@ -122,6 +132,8 @@ if __name__ == '__main__':
 
     # generate bounding box from matrix
     M = glob.glob(os.path.join(args.matrix_dir, f'{args.prefix}*.*'))
+    if len(M) == 0:
+        raise Exception('no matrix files found, ensure they are named correctly')
     matrix_arr = np.zeros((len(M), 3))
     for i, m in enumerate(M):
         matrix_arr[i, :] = np.loadtxt(m)[:3, 3]
@@ -131,6 +143,12 @@ if __name__ == '__main__':
         args.bbox = np.array([matrix_arr.min(axis=0)[:2] - args.tile,
                               matrix_arr.max(axis=0)[:2] + (args.tile * 2)]).T.flatten() // args.tile * args.tile
     if args.verbose: print('bounding box:', args.bbox)
+    if args.print_bbox_only: sys.exit()
+
+    # global rotation matrix
+    if args.global_matrix:
+        args.global_matrix = np.loadtxt(args.global_matrix)
+    else: args.global_matrix = np.identity(4)
 
     # create tile db
     X, Y = np.meshgrid(np.arange(args.bbox[0], args.bbox[1] + args.tile, args.tile),

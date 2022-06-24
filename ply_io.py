@@ -13,7 +13,7 @@ def read_ply(fp):
  
         length = 0
         prop = []
-        dtype_map = {'float': 'f4', 'uchar': 'B', 'int':'i'}
+        dtype_map = {'float32':'f4', 'float64': 'f8', 'float': 'f4', 'uchar': 'B', 'int':'i'}
         dtype = []
         fmt = 'binary'
     

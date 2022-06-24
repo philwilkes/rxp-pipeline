@@ -29,8 +29,11 @@ def tile_data(scan_pos, args):
             with args.Lock:
                 print('rxp -> xyz:', rxp)
     
-        fn_matrix = glob.glob(os.path.join(base, 'matrix', f'{scan.replace(".SCNPOS", "")}.*'))[0]
-        matrix = np.dot(args.global_matrix, np.loadtxt(fn_matrix))
+        fn_matrix = glob.glob(os.path.join(base, 'matrix', f'{scan.replace(".SCNPOS", "")}.*'))
+        if len(fn_matrix) == 0: 
+            if args.verbose: print('!!! Can not find rotation matrix', os.path.join(base, "matrix", scan.replace(".SCNPOS", "") + ".*"), '!!!')
+            return
+        matrix = np.dot(args.global_matrix, np.loadtxt(fn_matrix[0]))
         st_matrix = ' '.join(matrix.flatten().astype(str))
 
         cmds = []
